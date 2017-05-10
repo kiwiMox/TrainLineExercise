@@ -8,9 +8,12 @@ namespace AddressProcessing.CSV
 
         Please leave the rest of this file as it is so we can discuss your concerns during the next stage of the interview process.
         
-        *)
-        *)
-        *)
+        *) Class design and structure means that files could be left open or closed early if class not used correctly
+        *) string concatenation in the Write method, more efficient options available
+        *) I would recommend splitting the read and write functionality into seperate classes, single responsibilities etc
+        *) Two read methods that basically do the same thing, first one has no way of returning the read values
+        *) Read methods are implementation specific and limited to 2 columns
+        *) Lack of interface
     */
 
     public class CSVReaderWriterForAnnotation

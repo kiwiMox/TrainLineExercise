@@ -13,83 +13,46 @@ namespace AddressProcessing.CSV
         private StreamReader _readerStream = null;
         private StreamWriter _writerStream = null;
 
+        private const char _separator = '\t';
+
         [Flags]
-        public enum Mode { Read = 1, Write = 2 };
+        public enum Mode
+        {
+            Read = 1,
+            Write = 2
+        };
 
         public void Open(string fileName, Mode mode)
         {
-            if (mode == Mode.Read)
+            switch (mode)
             {
-                _readerStream = File.OpenText(fileName);
-            }
-            else if (mode == Mode.Write)
-            {
-                FileInfo fileInfo = new FileInfo(fileName);
-                _writerStream = fileInfo.CreateText();
-            }
-            else
-            {
-                throw new Exception("Unknown file mode for " + fileName);
+                case Mode.Read:
+                    _readerStream = File.OpenText(fileName);
+                    break;
+
+                case Mode.Write:
+                    _writerStream = new FileInfo(fileName).CreateText();
+                    break;
+
+                default:
+                    throw new Exception("Unknown file mode for " + fileName);
+                    break;
             }
         }
 
         public void Write(params string[] columns)
         {
-            string outPut = "";
-
-            for (int i = 0; i < columns.Length; i++)
-            {
-                outPut += columns[i];
-                if ((columns.Length - 1) != i)
-                {
-                    outPut += "\t";
-                }
-            }
-
-            WriteLine(outPut);
+            _writerStream.WriteLine(string.Join(_separator.ToString(), columns));
         }
 
         public bool Read(string column1, string column2)
         {
-            const int FIRST_COLUMN = 0;
-            const int SECOND_COLUMN = 1;
-
-            string line;
-            string[] columns;
-
-            char[] separator = { '\t' };
-
-            line = ReadLine();
-            columns = line.Split(separator);
-
-            if (columns.Length == 0)
-            {
-                column1 = null;
-                column2 = null;
-
-                return false;
-            }
-            else
-            {
-                column1 = columns[FIRST_COLUMN];
-                column2 = columns[SECOND_COLUMN];
-
-                return true;
-            }
+            return Read(out column1, out column2);
         }
 
         public bool Read(out string column1, out string column2)
         {
-            const int FIRST_COLUMN = 0;
-            const int SECOND_COLUMN = 1;
-
-            string line;
-            string[] columns;
-
-            char[] separator = { '\t' };
-
-            line = ReadLine();
-
+            string line = _readerStream.ReadLine();
             if (line == null)
             {
                 column1 = null;
@@ -98,32 +61,19 @@ namespace AddressProcessing.CSV
                 return false;
             }
 
-            columns = line.Split(separator);
-
-            if (columns.Length == 0)
+            string[] columns = line.Split(_separator);
+            if (columns.Length < 2)
             {
                 column1 = null;
                 column2 = null;
 
                 return false;
-            } 
-            else
-            {
-                column1 = columns[FIRST_COLUMN];
-                column2 = columns[SECOND_COLUMN];
-
-                return true;
             }
-        }
 
-        private void WriteLine(string line)
-        {
-            _writerStream.WriteLine(line);
-        }
+            column1 = columns[0];
+            column2 = columns[1];
 
-        private string ReadLine()
-        {
-            return _readerStream.ReadLine();
+            return true;
         }
 
         public void Close()
